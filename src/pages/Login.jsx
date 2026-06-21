@@ -52,6 +52,7 @@ export default function LoginPage() {
       justifyContent: 'center',
       background: 'var(--bg)',
       padding: '24px 20px',
+      paddingTop: 'calc(24px + var(--safe-t))',
       paddingBottom: 'calc(24px + env(safe-area-inset-bottom))',
     }}>
       <div style={{ fontSize: 60, marginBottom: 12, lineHeight: 1 }}>💪</div>

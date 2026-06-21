@@ -56,7 +56,7 @@ export default function App() {
 
   return (
     <ToastProvider>
-      <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: 'var(--safe-t)' }}>
         <div className="page-content">
           {page === 'dashboard' && (
             <>
