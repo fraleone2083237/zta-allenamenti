@@ -62,7 +62,8 @@ export default function App() {
             <>
               <div className="page-header">
                 <div>
-                  <h1 style={{ fontSize: 22 }}>💪 Allenamenti</h1>
+                  <h1 style={{ fontSize: 18 }}>💪 Zero To Athlete</h1>
+                  <div className="subtitle" style={{ fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', opacity: 0.6 }}>Tracking allenamenti</div>
                   <div className="subtitle">{today}</div>
                 </div>
               </div>

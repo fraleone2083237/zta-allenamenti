@@ -55,8 +55,8 @@ export default function LoginPage() {
       paddingBottom: 'calc(24px + env(safe-area-inset-bottom))',
     }}>
       <div style={{ fontSize: 60, marginBottom: 12, lineHeight: 1 }}>💪</div>
-      <h1 style={{ fontSize: 28, fontWeight: 800, margin: '0 0 4px', color: 'var(--text)' }}>
-        Allenamenti
+      <h1 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 4px', color: 'var(--text)', textAlign: 'center' }}>
+        Zero To Athlete
       </h1>
       <p style={{ color: 'var(--text-muted)', marginBottom: 36, fontSize: 14, textAlign: 'center' }}>
         {mode === 'login' ? 'Accedi al tuo account' : 'Crea il tuo account'}
