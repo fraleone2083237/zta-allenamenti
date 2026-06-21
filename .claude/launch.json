@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "app-allenamenti",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "C:\\Users\\frale\\Desktop\\App_Allenamenti\\start-dev.cmd"],
+      "port": 5173,
+      "autoPort": true
+    }
+  ]
+}
