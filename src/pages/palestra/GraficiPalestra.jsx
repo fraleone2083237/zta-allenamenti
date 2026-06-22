@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { getAllWorkouts, getAllExercises } from '../../db.js';
+import { getAllWorkouts } from '../../db.js';
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 
 function formatDateShort(s) {
@@ -25,30 +25,28 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 export default function GraficiPalestra() {
   const [workouts, setWorkouts] = useState([]);
-  const [exercises, setExercises] = useState([]);
-  const [selectedExId, setSelectedExId] = useState(null);
+  const [selectedName, setSelectedName] = useState(null);
   const [metric, setMetric] = useState('maxKg');
 
   useEffect(() => {
     getAllWorkouts().then(ws => setWorkouts(ws.sort((a, b) => a.data.localeCompare(b.data))));
-    getAllExercises().then(es => setExercises(es.sort((a, b) => a.nome.localeCompare(b.nome))));
   }, []);
 
-  // Determine which exercises appear in workouts
-  const exercisesInWorkouts = exercises.filter(ex =>
-    workouts.some(w => w.esercizi?.some(e => e.esercizioId === ex.id))
-  );
+  // Unique exercise names across all workouts, sorted alphabetically
+  const exerciseNames = [...new Set(
+    workouts.flatMap(w => w.esercizi?.map(e => e.esercizioNome).filter(Boolean) || [])
+  )].sort();
 
   useEffect(() => {
-    if (exercisesInWorkouts.length && !selectedExId) {
-      setSelectedExId(exercisesInWorkouts[0]?.id || null);
+    if (exerciseNames.length && !selectedName) {
+      setSelectedName(exerciseNames[0]);
     }
-  }, [exercisesInWorkouts.length]);
+  }, [exerciseNames.length]);
 
   const chartData = workouts
-    .filter(w => w.esercizi?.some(e => e.esercizioId === selectedExId))
+    .filter(w => w.esercizi?.some(e => e.esercizioNome === selectedName))
     .map(w => {
-      const block = w.esercizi.find(e => e.esercizioId === selectedExId);
+      const block = w.esercizi.find(e => e.esercizioNome === selectedName);
       const maxKg = Math.max(0, ...(block.serie?.map(s => parseFloat(s.kg) || 0) || [0]));
       const volume = block.serie?.reduce((s, set) => {
         return s + (parseFloat(set.ripetizioni) || 0) * (parseFloat(set.kg) || 0);
@@ -62,9 +60,7 @@ export default function GraficiPalestra() {
       };
     });
 
-  const selectedEx = exercises.find(e => e.id === selectedExId);
-
-  if (exercisesInWorkouts.length === 0) {
+  if (exerciseNames.length === 0) {
     return (
       <div className="empty-state">
         <div className="empty-state-icon">📊</div>
@@ -81,11 +77,11 @@ export default function GraficiPalestra() {
           <label className="form-label">Esercizio</label>
           <select
             className="form-select"
-            value={selectedExId || ''}
-            onChange={e => setSelectedExId(parseInt(e.target.value))}
+            value={selectedName || ''}
+            onChange={e => setSelectedName(e.target.value)}
           >
-            {exercisesInWorkouts.map(ex => (
-              <option key={ex.id} value={ex.id}>{ex.nome}</option>
+            {exerciseNames.map(name => (
+              <option key={name} value={name}>{name}</option>
             ))}
           </select>
         </div>
@@ -107,13 +103,13 @@ export default function GraficiPalestra() {
         <div className="empty-state" style={{ padding: '40px 32px' }}>
           <div className="empty-state-icon">📈</div>
           <h3>Dati insufficienti</h3>
-          <p>Servono almeno 2 sessioni con <strong>{selectedEx?.nome}</strong> per vedere il grafico</p>
+          <p>Servono almeno 2 sessioni con <strong>{selectedName}</strong> per vedere il grafico</p>
         </div>
       ) : (
         <div className="px-16">
           <div className="card card-body">
             <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12, fontWeight: 600 }}>
-              {selectedEx?.nome} —{' '}
+              {selectedName} —{' '}
               {metric === 'maxKg' ? 'Carico massimo (kg)' :
                metric === 'volume' ? 'Volume (kg × rip.)' : 'Ripetizioni totali'}
             </div>
@@ -139,33 +135,30 @@ export default function GraficiPalestra() {
             </div>
           </div>
 
-          {/* Mini stats */}
-          {chartData.length > 0 && (
-            <div className="stats-row" style={{ marginTop: 12 }}>
-              <div className="stat-box">
-                <div className="stat-value text-gym">
-                  {metric === 'maxKg'
-                    ? Math.max(...chartData.map(d => d.maxKg || 0))
-                    : metric === 'volume'
-                    ? Math.max(...chartData.map(d => d.volume || 0))
-                    : Math.max(...chartData.map(d => d.totalReps || 0))}
-                </div>
-                <div className="stat-label">massimo</div>
+          <div className="stats-row" style={{ marginTop: 12 }}>
+            <div className="stat-box">
+              <div className="stat-value text-gym">
+                {metric === 'maxKg'
+                  ? Math.max(...chartData.map(d => d.maxKg || 0))
+                  : metric === 'volume'
+                  ? Math.max(...chartData.map(d => d.volume || 0))
+                  : Math.max(...chartData.map(d => d.totalReps || 0))}
               </div>
-              <div className="stat-box">
-                <div className="stat-value">
-                  {Math.round(
-                    chartData.reduce((s, d) => s + (d[metric] || 0), 0) / chartData.filter(d => d[metric]).length
-                  ) || '—'}
-                </div>
-                <div className="stat-label">media</div>
-              </div>
-              <div className="stat-box">
-                <div className="stat-value">{chartData.length}</div>
-                <div className="stat-label">sessioni</div>
-              </div>
+              <div className="stat-label">massimo</div>
             </div>
-          )}
+            <div className="stat-box">
+              <div className="stat-value">
+                {Math.round(
+                  chartData.reduce((s, d) => s + (d[metric] || 0), 0) / chartData.filter(d => d[metric]).length
+                ) || '—'}
+              </div>
+              <div className="stat-label">media</div>
+            </div>
+            <div className="stat-box">
+              <div className="stat-value">{chartData.length}</div>
+              <div className="stat-label">sessioni</div>
+            </div>
+          </div>
         </div>
       )}
     </div>
